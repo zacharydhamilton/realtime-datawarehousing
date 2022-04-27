@@ -1,5 +1,9 @@
 /postgres/terraform/.terraform*
 /postgres/terraform/terraform*
 
+/terraform/gcp/creds/*.*
+/terraform/gcp/.terraform*
+/terraform/gcp/terraform*
+
 env.sh
 notes.file
