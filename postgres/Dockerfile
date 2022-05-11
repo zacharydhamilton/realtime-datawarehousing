@@ -2,7 +2,7 @@ FROM debezium/example-postgres
 
 ENV POSTGRES_DB=postgres
 ENV POSTGRES_USER=postgres
-ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_PASSWORD=rt-dwh-c0nflu3nt!
 
 RUN mkdir /data
 COPY data/* /data/

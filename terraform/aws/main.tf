@@ -32,8 +32,15 @@ resource "aws_security_group" "postgres_sg" {
         protocol = "tcp"
         cidr_blocks = [ "0.0.0.0/0" ]
     }
+    ingress {
+        description = "Postgres"
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = [ "0.0.0.0/0" ]
+    }
     tags = {
-        name = "rt-dwh-postgres-sg"
+        Name = "rt-dwh-postgres-sg"
         created_by = "terraform"
     }
 }
@@ -55,8 +62,15 @@ resource "aws_security_group" "mysql_sg" {
         protocol = "tcp"
         cidr_blocks = [ "0.0.0.0/0" ]
     }
+    ingress {
+        description = "Mysql"
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = [ "0.0.0.0/0" ]
+    }
     tags = {
-        name = "rt-dwh-mysql-sg"
+        Name = "rt-dwh-mysql-sg"
         created_by = "terraform"
     }
 }
@@ -74,12 +88,12 @@ resource "aws_instance" "postgres" {
     security_groups = [aws_security_group.postgres_sg.name]
     user_data = "${data.template_cloudinit_config.pg_bootstrap.rendered}"
     tags = {
-        name = "rt-dwh-postgres-instance"
+        Name = "rt-dwh-postgres-instance"
         created_by = "terraform"
     }
 }
-output "postgres_instance_dns_endpoint" {
-    value = aws_instance.postgres.public_dns
+output "postgres_instance_public_endpoint" {
+    value = aws_instance.postgres.public_ip
 }
 data "template_cloudinit_config" "ms_bootstrap" {
     base64_encode = true
@@ -93,12 +107,12 @@ resource "aws_instance" "mysql" {
     instance_type = "t2.micro"
     associate_public_ip_address = true
     security_groups = [aws_security_group.mysql_sg.name]
-    user_data = "${data.template_cloudinit_config.pg_bootstrap.rendered}"
+    user_data = "${data.template_cloudinit_config.ms_bootstrap.rendered}"
     tags = {
-        name = "rt-dwh-mysql-instance"
+        Name = "rt-dwh-mysql-instance"
         created_by = "terraform"
     }
 }
-output "mysql_instance_dns_endpoint" {
-    value = aws_instance.mysql.public_dns
+output "mysql_instance_public_endpoint" {
+    value = aws_instance.mysql.public_ip
 }

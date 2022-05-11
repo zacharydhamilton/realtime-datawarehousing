@@ -2,7 +2,7 @@ FROM debezium/example-mysql:1.8
 
 ENV MYSQL_USER=admin
 ENV MYSQL_ROOT_PASSWORD=admin
-ENV MYSQL_PASSWORD=admin
+ENV MYSQL_PASSWORD=rt-dwh-c0nflu3nt!
 
 RUN mkdir /data
 COPY data/* /data/

@@ -1,5 +1,5 @@
-/postgres/terraform/.terraform*
-/postgres/terraform/terraform*
+/terraform/aws/.terraform*
+/terraform/aws/terraform*
 
 /terraform/gcp/creds/*.*
 /terraform/gcp/.terraform*

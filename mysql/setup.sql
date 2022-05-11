@@ -4,7 +4,7 @@
 -- # However, this grant is equivalent to specifying *any* hosts, which makes this easier since the docker host
 -- # is not easily known to the Docker container. But don't do this in production.
 CREATE USER 'replicator' IDENTIFIED BY 'replpass';
-CREATE USER 'debezium' IDENTIFIED BY 'debezium';
+CREATE USER 'debezium' IDENTIFIED BY 'rt-dwh-c0nflu3nt!';
 GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'replicator';
 GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT  ON *.* TO 'debezium';
 
