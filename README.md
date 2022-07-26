@@ -22,7 +22,7 @@ This repository is meant to either be presented as a walk through by a member of
 ## Prerequisites
 
 First thing you'll need is a Confluent Cloud account. If you already have one, you can skip this, otherwise, you can try this completely free of charge and without adding payment details. The following link will bring you to a sign up page to get started. 
-- [Get STarted with Confluent Cloud for Free](https://www.confluent.io/confluent-cloud/tryfree/).
+- [Get Started with Confluent Cloud for Free](https://www.confluent.io/confluent-cloud/tryfree/).
 
 As you can expect, there are some tools that will be required to be successful with this lab. Please have the following in order to take full advantage of this workshop/lab guide.
 - Docker
