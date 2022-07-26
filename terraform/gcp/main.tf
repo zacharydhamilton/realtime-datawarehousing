@@ -1,16 +1,17 @@
-# Passed by providing the env var TF_VAR_GCP_PROJECT
-variable "GCP_PROJECT" {
-  type = string
-}
-# Passed by providing the env var TF_VAR_GCP_PROJECT
-variable "GCP_CREDENTIALS" {
-  type = string
-}
+# # Passed by providing the env var TF_VAR_GCP_PROJECT
+# variable "GCP_PROJECT" {
+#   type = string
+# }
+# # Passed by providing the env var TF_VAR_GCP_PROJECT
+# variable "GCP_CREDENTIALS" {
+#   type = string
+# }
+
 provider "google" {
     project = var.GCP_PROJECT
     region  = "us-east1"
     zone    = "us-east1-c"
-    credentials = var.GCP_CREDENTIALS
+    credentials = var.GCP_CREDENTIALS 
 }
 data "google_compute_network" "default" {
     name = "default"

@@ -1,3 +1,8 @@
+ALTER SYSTEM SET max_wal_senders = '250';
+ALTER SYSTEM SET wal_sender_timeout = '60s';
+ALTER SYSTEM SET max_replication_slots = '250';
+ALTER SYSTEM SET wal_level = 'logical';
+
 CREATE SCHEMA products;
 SET search_path TO products;
 

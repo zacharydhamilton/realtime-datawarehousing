@@ -5,5 +5,7 @@
 /terraform/gcp/.terraform*
 /terraform/gcp/terraform*
 
+/postgres/conf
+
 env.sh
 notes.file

@@ -195,20 +195,21 @@ Coming Soon!
 
 1. Once the topics have been created, start by creating the Debezium Postgres CDC Source Connector. Select **Data integration > Connectors** from the left-hand menu, then search for the connector. When you find its tile, select it and configure it with the following settings, then launch it. 
 
-    | **Property**                      | **Value**                          |
-    |-----------------------------------|------------------------------------|
-    | Kafka Cluster Authentication mode | KAFKA_API_KEY                      |
-    | Kafka API Key                     | *copy from clipboard file*         |
-    | Kafka API Secret                  | *copy from clipboard file*         |
-    | Database hostname                 | *derived from Terraform output*    |
-    | Database port                     | 5432                               |
-    | Database username                 | postgres                           |
-    | Database password                 | rt-dwh-c0nflu3nt!                  |
-    | Database name                     | postgres                           |
-    | Database server name              | postgres                           |
-    | Tables included                   | products.products, products.orders |
-    | Output Kafka record value format  | JSON_SR                            |
-    | Tasks                             | 1                                  |
+    | **Property**                      | **Value**                            |
+    |-----------------------------------|--------------------------------------|
+    | Kafka Cluster Authentication mode | KAFKA_API_KEY                        |
+    | Kafka API Key                     | *copy from clipboard file*           |
+    | Kafka API Secret                  | *copy from clipboard file*           |
+    | Database hostname                 | *derived from Terraform output*      |
+    | Database port                     | 5432                                 |
+    | Database username                 | postgres                             |
+    | Database password                 | rt-dwh-c0nflu3nt!                    |
+    | Database name                     | postgres                             |
+    | Database server name              | postgres                             |
+    | Tables included                   | products.products, products.orders   |
+    | Slot name                         | *something creative, like **turtle**, but obviously not turtle* |
+    | Output Kafka record value format  | JSON_SR                              |
+    | Tasks                             | 1                                    |
 
     The connector can take a minute or two to provision. While it is, you can create the next connector. 
 
