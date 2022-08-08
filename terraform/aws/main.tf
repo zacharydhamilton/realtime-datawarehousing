@@ -15,7 +15,7 @@ resource "aws_default_vpc" "default_vpc" {
     }
 }
 resource "aws_security_group" "postgres_sg" {
-    name = "postgres_security_group"
+    name = "postgres_security_group_attendees"
     description = "Security Group for Postgres EC2 instance. Used in Confluent Cloud Realtime Datawarehouse Ingestion workshop."
     vpc_id = aws_default_vpc.default_vpc.id
     egress {
@@ -40,12 +40,12 @@ resource "aws_security_group" "postgres_sg" {
         cidr_blocks = [ "0.0.0.0/0" ]
     }
     tags = {
-        Name = "rt-dwh-postgres-sg"
+        Name = "rt-dwh-postgres-attendee-sg"
         created_by = "terraform"
     }
 }
 resource "aws_security_group" "mysql_sg" {
-    name = "mysql_security_group"
+    name = "mysql_security_group_attendees"
     description = "Security Group for MySQL EC2 instance. Used in Confluent Cloud Realtime Datawarehouse Ingestion workshop."
     vpc_id = aws_default_vpc.default_vpc.id
     egress {
@@ -70,7 +70,7 @@ resource "aws_security_group" "mysql_sg" {
         cidr_blocks = [ "0.0.0.0/0" ]
     }
     tags = {
-        Name = "rt-dwh-mysql-sg"
+        Name = "rt-dwh-mysql-attendee-sg"
         created_by = "terraform"
     }
 }
@@ -82,18 +82,19 @@ data "template_cloudinit_config" "pg_bootstrap" {
     }
 }
 resource "aws_instance" "postgres" {
+    count = 5
     ami = "ami-0c7478fd229861c57"
-    instance_type = "t2.micro"
+    instance_type = "t2.xlarge"
     associate_public_ip_address = true
     security_groups = [aws_security_group.postgres_sg.name]
     user_data = "${data.template_cloudinit_config.pg_bootstrap.rendered}"
     tags = {
-        Name = "rt-dwh-postgres-instance"
+        Name = "rt-dwh-postgres-attendee-instance-${count.index}"
         created_by = "terraform"
     }
 }
 output "postgres_instance_public_endpoint" {
-    value = aws_instance.postgres.public_ip
+    value = ["${aws_instance.postgres.*.public_ip}"]
 }
 data "template_cloudinit_config" "ms_bootstrap" {
     base64_encode = true
@@ -103,16 +104,17 @@ data "template_cloudinit_config" "ms_bootstrap" {
     }
 }
 resource "aws_instance" "mysql" {
+    count = 5
     ami = "ami-0c7478fd229861c57"
-    instance_type = "t2.micro"
+    instance_type = "t2.xlarge"
     associate_public_ip_address = true
     security_groups = [aws_security_group.mysql_sg.name]
     user_data = "${data.template_cloudinit_config.ms_bootstrap.rendered}"
     tags = {
-        Name = "rt-dwh-mysql-instance"
+        Name = "rt-dwh-mysql-attendee-instance-${count.index}"
         created_by = "terraform"
     }
 }
 output "mysql_instance_public_endpoint" {
-    value = aws_instance.mysql.public_ip
+    value = ["${aws_instance.mysql.*.public_ip}"]
 }
