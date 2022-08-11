@@ -15,7 +15,7 @@ resource "aws_default_vpc" "default_vpc" {
     }
 }
 resource "aws_security_group" "postgres_sg" {
-    name = "postgres_security_group_attendees"
+    name = "postgres_security_group_attendees_${split("-", uuid())[0]}"
     description = "Security Group for Postgres EC2 instance. Used in Confluent Cloud Realtime Datawarehouse Ingestion workshop."
     vpc_id = aws_default_vpc.default_vpc.id
     egress {
@@ -45,7 +45,7 @@ resource "aws_security_group" "postgres_sg" {
     }
 }
 resource "aws_security_group" "mysql_sg" {
-    name = "mysql_security_group_attendees"
+    name = "mysql_security_group_attendees_${split("-", uuid())[0]}"
     description = "Security Group for MySQL EC2 instance. Used in Confluent Cloud Realtime Datawarehouse Ingestion workshop."
     vpc_id = aws_default_vpc.default_vpc.id
     egress {
