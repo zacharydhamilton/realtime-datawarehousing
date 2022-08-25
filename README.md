@@ -41,7 +41,7 @@ In addition to the necessary tools, this lab will use those tools to create reso
 
 Finally, in order to sink data to a data warehouse in real-time, you'll need one of the following data warehousing technologies and the stated permissions. It is expected that you'll either have one of these two solutions already to use, or to follow the included documentation to have it provisioned to work with Confluent Cloud.
 - Snowflake
-    - TBD.
+    - [Current Limitations](https://docs.confluent.io/cloud/current/connectors/limits.html#snowflake-sink-connector).
 - Databricks *(AWS only)*
     - Databricks running **within the same region that you will deploy your Kafka Cluster**.
     - An S3 bucket in which the Delta Lake Sink Connector can stage data (this is explained in the link below).
@@ -505,7 +505,8 @@ At this point, you can play around to your hearts desire with the dataset in Dat
 <details>
     <summary><b>Snowflake</b></summary>
 
-Coming Soon!
+The most detailed description of setting up the **Fully-Managed Snowflake Sink Connector** can be found [here](https://docs.confluent.io/cloud/current/connectors/cc-snowflake-sink.html). 
+> **Note:** *The screenshots (at the time this was written) are of the classic view in Snowflake. If things don't align, try switching to the classic view.*
 
 </details>
 

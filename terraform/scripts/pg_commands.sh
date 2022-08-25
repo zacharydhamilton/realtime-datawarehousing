@@ -21,7 +21,10 @@ while [ $PG_READY -ne 0 ]; do
     sleep 1
 done
 echo "Completed postgres readniness checks." >> startup.log
-echo "Starting postgres procedure..." >> startup.log
+echo "Starting postgres procedures..." >> startup.log
+echo "Starting generate_orders()..." >> startup.log
 sudo docker exec -d postgres psql -U postgres -c 'CALL products.generate_orders();'
-echo "Started postgres procedure in the background." >> startup.log
+echo "Starting change_prices()..." >> startup.log 
+sudo docker exec -d postgres psql -U postgres -c 'CALL products.change_prices();'
+echo "Started postgres procedures in the background." >> startup.log
 echo "Done..." >> startup.log

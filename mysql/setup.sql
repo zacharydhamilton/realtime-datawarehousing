@@ -45,3 +45,38 @@ INTO TABLE demographics
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
+
+-- # Create a secondary demographics table since you cannot update rows with subqueries that select from the same table, this if for shuffling the demographic data
+CREATE TABLE demographics_copy AS SELECT * FROM demographics;
+
+-- # Change the delimiter for creating the procedures
+DELIMITER $$
+
+-- # Stored procedure to shuffle customer data, creating random change events
+CREATE PROCEDURE shuffle_customers()
+BEGIN
+    WHILE 1 = 1 DO     
+            UPDATE customers.customers
+                SET phone = (SELECT CONCAT(CAST(FLOOR(RAND()*(999-100+1))+100 AS CHAR), '-', CAST(FLOOR(RAND()*(999-100+1))+100 AS CHAR), '-', CAST(FLOOR(RAND()*(9999-1000+1))+1000 AS CHAR)))
+                ORDER BY RAND()
+                LIMIT 1;
+            COMMIT;
+            SELECT SLEEP(150);
+    END WHILE;
+END$$
+
+-- # Stored procedure to shuffle demographic data, creating random change events
+CREATE PROCEDURE shuffle_demographics()
+BEGIN
+    WHILE 1 = 1 DO     
+            UPDATE customers.demographics
+                SET street_address = (SELECT CONCAT((SELECT SUBSTRING_INDEX(street_address, ' ', 1) FROM customers.demographics_copy ORDER BY RAND() LIMIT 1), (SELECT SUBSTRING_INDEX(SUBSTR(street_address, LOCATE(' ', street_address)), SUBSTRING_INDEX(street_address, ' ', -1), 1) FROM customers.demographics_copy ORDER BY RAND() LIMIT 1), (SELECT SUBSTRING_INDEX(street_address, ' ', -1) FROM customers.demographics_copy ORDER BY RAND() LIMIT 1)))
+                ORDER BY RAND()
+                LIMIT 1;
+            COMMIT;
+            SELECT SLEEP(150);
+    END WHILE;
+END$$
+
+-- # Change the delimiter back
+DELIMITER ;
