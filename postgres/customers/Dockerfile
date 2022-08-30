@@ -1,4 +1,4 @@
-FROM debezium/example-postgres
+FROM debezium/example-postgres:2.0
 
 ENV POSTGRES_DB=postgres
 ENV POSTGRES_USER=postgres
