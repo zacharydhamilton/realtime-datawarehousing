@@ -15,7 +15,7 @@ resource "aws_default_vpc" "default_vpc" {
     }
 }
 resource "aws_security_group" "postgres_sg" {
-    name = "postgres_security_group"
+    name = "postgres_security_group_${split("-", uuid())[0]}"
     description = "Security Group for Postgres EC2 instance. Used in Confluent Cloud Realtime Datawarehouse Ingestion workshop."
     vpc_id = aws_default_vpc.default_vpc.id
     egress {
@@ -44,75 +44,60 @@ resource "aws_security_group" "postgres_sg" {
         created_by = "terraform"
     }
 }
-resource "aws_security_group" "mysql_sg" {
-    name = "mysql_security_group"
-    description = "Security Group for MySQL EC2 instance. Used in Confluent Cloud Realtime Datawarehouse Ingestion workshop."
-    vpc_id = aws_default_vpc.default_vpc.id
-    egress {
-        description = "Allow all outbound."
-        from_port = 0
-        to_port = 0
-        protocol = "-1"
-        cidr_blocks = [ "0.0.0.0/0" ]
-    }
-    ingress {
-        description = "Mysql"
-        from_port = 3306
-        to_port = 3306
-        protocol = "tcp"
-        cidr_blocks = [ "0.0.0.0/0" ]
-    }
-    ingress {
-        description = "Mysql"
-        from_port = 22
-        to_port = 22
-        protocol = "tcp"
-        cidr_blocks = [ "0.0.0.0/0" ]
-    }
-    tags = {
-        Name = "rt-dwh-mysql-sg"
-        created_by = "terraform"
-    }
-}
-data "template_cloudinit_config" "pg_bootstrap" {
+
+data "template_cloudinit_config" "pg_bootstrap_customers" {
     base64_encode = true
     part {
         content_type = "text/x-shellscript"
-        content = "${file("../scripts/pg_commands.sh")}"
+        content = "${file("../scripts/pg_customers_bootstrap.sh")}"
     }
 }
-resource "aws_instance" "postgres" {
+resource "aws_instance" "postgres_customers" {
     ami = "ami-0c7478fd229861c57"
     instance_type = "t2.micro"
-    associate_public_ip_address = true
     security_groups = [aws_security_group.postgres_sg.name]
-    user_data = "${data.template_cloudinit_config.pg_bootstrap.rendered}"
+    user_data = "${data.template_cloudinit_config.pg_bootstrap_customers.rendered}"
     tags = {
-        Name = "rt-dwh-postgres-instance"
+        Name = "rt-dwh-postgres-customers-instance"
         created_by = "terraform"
     }
 }
-output "postgres_instance_public_endpoint" {
-    value = aws_instance.postgres.public_ip
+resource "aws_eip" "postgres_customers_ip" {
+    vpc = true
+    instance = aws_instance.postgres_customers.id
+    tags = {
+        Name = "rt-dwh-postgres-customers-eip"
+        created_by = "terraform"
+    }
 }
-data "template_cloudinit_config" "ms_bootstrap" {
+output "postgres_instance_customers_public_endpoint" {
+    value = aws_eip.postgres_customers_ip.public_ip
+}
+data "template_cloudinit_config" "pg_bootstrap_products" {
     base64_encode = true
     part {
         content_type = "text/x-shellscript"
-        content = "${file("../scripts/ms_commands.sh")}"
+        content = "${file("../scripts/pg_products_bootstrap.sh")}"
     }
 }
-resource "aws_instance" "mysql" {
+resource "aws_instance" "postgres_products" {
     ami = "ami-0c7478fd229861c57"
     instance_type = "t2.micro"
-    associate_public_ip_address = true
-    security_groups = [aws_security_group.mysql_sg.name]
-    user_data = "${data.template_cloudinit_config.ms_bootstrap.rendered}"
+    security_groups = [aws_security_group.postgres_sg.name]
+    user_data = "${data.template_cloudinit_config.pg_bootstrap_products.rendered}"
     tags = {
-        Name = "rt-dwh-mysql-instance"
+        Name = "rt-dwh-postgres-products-instance"
         created_by = "terraform"
     }
 }
-output "mysql_instance_public_endpoint" {
-    value = aws_instance.mysql.public_ip
+resource "aws_eip" "postgres_products_ip" {
+    vpc = true
+    instance = aws_instance.postgres_products.id
+    tags = {
+        Name = "rt-dwh-postgres-products-eip"
+        created_by = "terraform"
+    }
+}
+output "postgres_instance_products_public_endpoint" {
+    value = aws_eip.postgres_products_ip.public_ip
 }

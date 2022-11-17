@@ -41,7 +41,7 @@ In addition to the necessary tools, this lab will use those tools to create reso
 
 Finally, in order to sink data to a data warehouse in real-time, you'll need one of the following data warehousing technologies and the stated permissions. It is expected that you'll either have one of these two solutions already to use, or to follow the included documentation to have it provisioned to work with Confluent Cloud.
 - Snowflake
-    - TBD.
+    - [Current Limitations](https://docs.confluent.io/cloud/current/connectors/limits.html#snowflake-sink-connector).
 - Databricks *(AWS only)*
     - Databricks running **within the same region that you will deploy your Kafka Cluster**.
     - An S3 bucket in which the Delta Lake Sink Connector can stage data (this is explained in the link below).
@@ -140,7 +140,7 @@ The next steps will vary between the various cloud providers. Use the following 
     ```
     > **Note:** *To see the inventory of what is created by this command, check out the configuration file [here](https://github.com/zacharydhamilton/realtime-datawarehousing/tree/main/terraform/aws).*
 
-The Terraform configuration will create two outputs. These outputs are the public endpoints of the Postgres and Mysql instances that were created. Keep these handy as you will need them in the connector configuration steps. 
+The Terraform configuration will create two outputs. These outputs are the public endpoints of the Postgres (Customers DB) and Postgres (Products DB) instances that were created. Keep these handy as you will need them in the connector configuration steps. 
 
 </details>
 
@@ -167,7 +167,7 @@ The Terraform configuration will create two outputs. These outputs are the publi
     ```
     > **Note:** *To see the inventory of what is created by this command, check out the configuration file [here](https://github.com/zacharydhamilton/realtime-datawarehousing/tree/main/terraform/gcp).*
 
-The Terraform configuration will create two outputs. These outputs are the public endpoints of the Postgres and Mysql instances that were created. Keep these handy as you will need them in the connector configuration steps. 
+The Terraform configuration will create two outputs. These outputs are the public endpoints of the Postgres (Customers DB) and Postgres (Products DB) instances that were created. Keep these handy as you will need them in the connector configuration steps. 
 
 
 </details>
@@ -188,53 +188,54 @@ Coming Soon!
 ### Kafka Connectors
 
 1. Before creating the connectors, you'll need to create the topics they'll write data to. The following list of topics should each be created with **1 partition each** for simplicity in the **Topics** menu.
+    - `postgres.customers.customers`
+    - `postgres.customers.demographics`
     - `postgres.products.products`
     - `postgres.products.orders`
-    - `mysql.customers.customers`
-    - `mysql.customers.demographics`
-
-1. Once the topics have been created, start by creating the Debezium Postgres CDC Source Connector. Select **Data integration > Connectors** from the left-hand menu, then search for the connector. When you find its tile, select it and configure it with the following settings, then launch it. 
-
-    | **Property**                      | **Value**                            |
-    |-----------------------------------|--------------------------------------|
-    | Kafka Cluster Authentication mode | KAFKA_API_KEY                        |
-    | Kafka API Key                     | *copy from clipboard file*           |
-    | Kafka API Secret                  | *copy from clipboard file*           |
-    | Database hostname                 | *derived from Terraform output*      |
-    | Database port                     | 5432                                 |
-    | Database username                 | postgres                             |
-    | Database password                 | rt-dwh-c0nflu3nt!                    |
-    | Database name                     | postgres                             |
-    | Database server name              | postgres                             |
-    | Tables included                   | products.products, products.orders   |
-    | Slot name                         | *something creative, like **turtle**, but obviously not turtle* |
-    | Output Kafka record value format  | JSON_SR                              |
-    | Tasks                             | 1                                    |
-
-    The connector can take a minute or two to provision. While it is, you can create the next connector. 
-
-1. Create the Debezium Mysql CDC Source Connect by searching for it as you did above. When you find it, configure it with the following settings, then launch it. 
+    
+1. Once the topics have been created, start by creating the Debezium Postgres CDC Source Connector (for the customers DB). Select **Data integration > Connectors** from the left-hand menu, then search for the connector. When you find its tile, select it and configure it with the following settings, then launch it. 
 
     | **Property**                      | **Value**                                   |
     |-----------------------------------|---------------------------------------------|
-    | Kafka Cluster Authentication mode | KAFKA_API_KEY                               |
+    | Kafka Cluster Authentication mode | "Use an existing API key"                   |
     | Kafka API Key                     | *copy from clipboard file*                  |
     | Kafka API Secret                  | *copy from clipboard file*                  |
-    | Database hostname                 | *derived from Terraform output*             |
-    | Database port                     | 3306                                        |
-    | Database username                 | debezium                                    |
+    | Database name                     | postgres                                    | 
+    | Database server name              | postgres                                    |
+    | SSL mode                          | disabled                                    |
+    | Database hostname                 | *derived from Terraform output or provided* |
+    | Database port                     | 5432                                        |
+    | Database username                 | postgres                                    |
     | Database password                 | rt-dwh-c0nflu3nt!                           |
-    | Database server name              | mysql                                       |
-    | Databases included                | customers                                   |
-    | Tables included                   | customers.customers, customers.demographics |
     | Output Kafka record value format  | JSON_SR                                     |
-    | After-state only                  | false                                       |
     | Output Kafka record key format    | JSON_SR                                     |
+    | Slot name                         | *something creative, like **camel**, it can be anything unique* |
+    | Tables included                   | customers.customers, customers.demographics |
+    | After-state only                  | false                                       |
+    | Tasks                             | 1                                           |
+
+    The connector can take a minute or two to provision. While it is, you can create the next connector. 
+
+1. Create the Debezium Postgres CDC Source Connector (for the products DB) by searching for it as you did above. When you find it, configure it with the following settings, then launch it. 
+
+    | **Property**                      | **Value**                                   |
+    |-----------------------------------|---------------------------------------------|
+    | Kafka Cluster Authentication mode | "Use an existing API key"                   |
+    | Kafka API Key                     | *copy from clipboard file*                  |
+    | Kafka API Secret                  | *copy from clipboard file*                  |
+    | Database name                     | postgres                                    | 
+    | Database server name              | postgres                                    |
+    | SSL mode                          | disabled                                    |
+    | Database hostname                 | *derived from Terraform output or provided* |
+    | Database port                     | 5432                                        |
+    | Database username                 | postgres                                    |
+    | Database password                 | rt-dwh-c0nflu3nt!                           |
+    | Output Kafka record value format  | JSON_SR                                     |
+    | Slot name                         | *something creative, like **turtle**, it can be anything unique* |
+    | Tables included                   | products.products, products.orders          |
     | Tasks                             | 1                                           |
 
 Give the connectors a chance to provision, and troubleshoot any failures that occur. Once provisioned, the connector should begin capturing a stream of change data from a few tables in each database. 
-
-> **Note:** *Only the table containing orders will have a real time stream of records. The other will have their records produced to topics as part of their initial snapshot, then nothing else will happen. Therefore, if you see low/no throughput to the corresponding topics for those tables, this is why.*
 
 <br>
 
@@ -252,7 +253,7 @@ With the connectors provisioned, it's time to transform and join our streams of 
             after STRUCT<id VARCHAR, first_name VARCHAR, last_name VARCHAR, email VARCHAR, phone VARCHAR>,
             op VARCHAR
         ) WITH (
-            KAFKA_TOPIC='mysql.customers.customers',
+            KAFKA_TOPIC='postgres.customers.customers',
             KEY_FORMAT='JSON_SR',
             VALUE_FORMAT='JSON_SR'
         );
@@ -298,7 +299,7 @@ With the connectors provisioned, it's time to transform and join our streams of 
             after STRUCT<id VARCHAR, street_address VARCHAR, state VARCHAR, zip_code VARCHAR, country VARCHAR, country_code VARCHAR>,
             op VARCHAR
         ) WITH (
-            KAFKA_TOPIC='mysql.customers.demographics',
+            KAFKA_TOPIC='postgres.customers.demographics',
             KEY_FORMAT='JSON_SR',
             VALUE_FORMAT='JSON_SR'
         );
@@ -439,19 +440,19 @@ With the connectors provisioned, it's time to transform and join our streams of 
                 KEY_FORMAT='JSON',
                 VALUE_FORMAT='JSON_SR'
             ) AS SELECT 
-                o.order_key `order_key`, o.order_id `order_id`,
+                o.order_id `order_id`,
                 p.product_id `product_id`, p.`size` `size`, p.product `product`, p.department `department`, p.price `price`,
                 c.id `id`, c.first_name `first_name`, c.last_name `last_name`, c.email `email`, c.phone `phone`,
                 c.street_address `street_address`, c.state `state`, c.zip_code `zip_code`, c.country `country`, c.country_code `country_code`
-            FROM orders_composite o
+            FROM orders_rekeyed o
                 JOIN products p ON o.product_id = p.product_id
                 JOIN customers_enriched c ON o.customer_id = c.id
-            PARTITION BY o.order_key  
+            PARTITION BY o.order_id  
         EMIT CHANGES;  
     ```
-    > **Note:** *You used a stream rather than a table above since you'll use this new stream of enriched data to hydrate your data warehouse in a future step. 
+    > **Note:** *You used a stream rather than a table above since you'll use this new stream of enriched data to hydrate your data warehouse in a future step.* 
 
-At this point, you should have a functioning Ksql topology. To see the flow laid out graphically, select **Flow** from the tabs in the Ksql cluster.
+At this point, you should have a functioning Ksql topology. To see the flow laid out graphically, select **Flow** from the tabs in the Ksql cluster or click [here](https://github.com/zacharydhamilton/realtime-datawarehousing/blob/mysql/images/stream-lineage.png) for a screenshot.
 
 ***
 
@@ -505,7 +506,8 @@ At this point, you can play around to your hearts desire with the dataset in Dat
 <details>
     <summary><b>Snowflake</b></summary>
 
-Coming Soon!
+The most detailed description of setting up the **Fully-Managed Snowflake Sink Connector** can be found [here](https://docs.confluent.io/cloud/current/connectors/cc-snowflake-sink.html). 
+> **Note:** *The screenshots (at the time this was written) are of the classic view in Snowflake. If things don't align, try switching to the classic view.*
 
 </details>
 
@@ -521,8 +523,8 @@ When you're done with all of the resources created in this lab, **be sure to del
 During this lab you created the following resources, be sure to remove them when you're done with them.
 - Ksql Cluster
 - Delta Lake Sink Connector
-- Postgres CDC Source Connector
-- Mysql CDC Source Connector
+- Postgres CDC Source Connector (Customers)
+- Postgres CDC Source Connector (Products)
 - Kafka Cluster
 
 ### Terraform
