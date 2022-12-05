@@ -13,7 +13,7 @@ provider "aws" {
 # Local variables
 # ------------------------------------------------------
 locals {
-    num_instances = 5
+    num_instances = 1
 }
 # ------------------------------------------------------
 # Basic networking
