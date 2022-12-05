@@ -529,9 +529,10 @@ During this lab you created the following resources, be sure to remove them when
 
 ### Terraform
 To remove everything provisioned by Terraform in either AWS, GCP, or Azure, use the following command.
-    ```bash
-    terraform destroy
-    ```
+
+```bash
+terraform destroy
+```
 
 ### Databricks and Snowflake
 If you created instances of either Databricks and Snowflake solely for the purpose of this lab, remove them!
