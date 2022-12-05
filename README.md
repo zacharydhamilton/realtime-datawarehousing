@@ -68,16 +68,6 @@ Finally, in order to sink data to a data warehouse in real-time, you'll need one
     ```bash
     # Contents to create in env.sh ...
 
-    # Confluent Creds
-    export BOOTSTRAP_SERVERS="<replace>"
-    export KAFKA_KEY="<replace>"
-    export KAFKA_SECRET="<replace>"
-    export SASL_JAAS_CONFIG="org.apache.kafka.common.security.plain.PlainLoginModule required username='$KAFKA_KEY' password='$KAFKA_SECRET';"
-    export SCHEMA_REGISTRY_URL="<replace>"
-    export SCHEMA_REGISTRY_KEY="<replace>"
-    export SCHEMA_REGISTRY_SECRET="<replace>"
-    export SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO="$SCHEMA_REGISTRY_KEY:$SCHEMA_REGISTRY_SECRET"
-    export BASIC_AUTH_CREDENTIALS_SOURCE="USER_INFO"
     # AWS Creds for TF
     export AWS_ACCESS_KEY_ID="<replace>"
     export AWS_SECRET_ACCESS_KEY="<replace>"
@@ -91,7 +81,7 @@ Finally, in order to sink data to a data warehouse in real-time, you'll need one
     export DATABRICKS_ACCESS_TOKEN="<replace>"
     export DELTA_LAKE_STAGING_BUCKET_NAME="<replace>"
     ```
-    > **Note:** *The impetus behind the above is so that you can easily `sh env.sh` to have all the values available in the terminal.*
+    > **Note:** *The impetus behind the above is so that you can easily `source env.sh` to have all the values available in the terminal.*
 
 1. Create a cluster in Confluent Cloud. The recommended cluster type for this workshop/lab is either Basic/Standard.
     - [Create a Cluster in Confluent Cloud](https://docs.confluent.io/cloud/current/clusters/create-cluster.html).

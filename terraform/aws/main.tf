@@ -14,6 +14,7 @@ provider "aws" {
 # ------------------------------------------------------
 locals {
     num_instances = 1
+    instance_shape = "t2.micro"
 }
 # ------------------------------------------------------
 # Basic networking
@@ -73,7 +74,7 @@ data "template_cloudinit_config" "pg_bootstrap_customers" {
 resource "aws_instance" "postgres_customers" {
     count = local.num_instances
     ami = "ami-0c7478fd229861c57"
-    instance_type = "t2.micro"
+    instance_type = local.instance_shape
     security_groups = [aws_security_group.postgres_sg.name]
     user_data = "${data.template_cloudinit_config.pg_bootstrap_customers.rendered}"
     tags = {
@@ -107,7 +108,7 @@ data "template_cloudinit_config" "pg_bootstrap_products" {
 resource "aws_instance" "postgres_products" {
     count = local.num_instances
     ami = "ami-0c7478fd229861c57"
-    instance_type = "t2.micro"
+    instance_type = local.instance_shape
     security_groups = [aws_security_group.postgres_sg.name]
     user_data = "${data.template_cloudinit_config.pg_bootstrap_products.rendered}"
     tags = {
