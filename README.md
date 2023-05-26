@@ -170,6 +170,7 @@ The Terraform configuration will create two outputs. These outputs are the publi
     - `postgres.customers.demographics`
     - `postgres.products.products`
     - `postgres.products.orders`
+    
     > **Note:** *It's worth pointing out that Connectors will auto create their topics.*
     
 1. Once the topics have been created, start by creating the Debezium Postgres CDC Source Connector (for the customers DB). Select **Data integration > Connectors** from the left-hand menu, then search for the connector. When you find its tile, select it and configure it with the following settings, then launch it. 
@@ -495,7 +496,7 @@ The most detailed description of setting up the **Fully-Managed Snowflake Sink C
 <details>
     <summary><b>Imply Polaris</b></summary>
 
-To add Imply Polaris as the target for your real-time data, use the following guide in order to set things up [here](/polaris/README.md);
+To add Imply Polaris as the target for your real-time data, use the following guide in order to set things up [here](/polaris/README.md).
 
 </details>
 
