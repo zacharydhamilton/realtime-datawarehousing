@@ -27,6 +27,7 @@ resource "aws_default_vpc" "default_vpc" {
 resource "random_id" "sg_id" {
     byte_length = 4
 }
+
 resource "aws_security_group" "postgres_sg" {
     name = "postgres_security_group_${random_id.sg_id.hex}"
     description = "Security Group for Postgres EC2 instance. Used in Confluent Cloud Realtime Datawarehouse Ingestion workshop."
@@ -42,13 +43,6 @@ resource "aws_security_group" "postgres_sg" {
         description = "Postgres"
         from_port = 5432
         to_port = 5432
-        protocol = "tcp"
-        cidr_blocks = [ "0.0.0.0/0" ]
-    }
-    ingress {
-        description = "Postgres"
-        from_port = 22
-        to_port = 22
         protocol = "tcp"
         cidr_blocks = [ "0.0.0.0/0" ]
     }

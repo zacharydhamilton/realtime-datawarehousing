@@ -2,7 +2,7 @@
     <img src="images/confluent.png" width=50% height=50%>
 </div>
 
-# <div align="center">Real-time Data Warehouse Ingestion with Confluent Cloud</div>
+# <div align="center">Real-time Data Warehousing with Confluent Cloud</div>
 ## <div align="center">Workshop & Lab Guide</div>
 
 ## Background
@@ -24,11 +24,11 @@ This repository is meant to either be presented as a walk through by a member of
 First thing you'll need is a Confluent Cloud account. If you already have one, you can skip this, otherwise, you can try this completely free of charge and without adding payment details. The following link will bring you to a sign up page to get started. 
 - [Get Started with Confluent Cloud for Free](https://www.confluent.io/confluent-cloud/tryfree/).
 
-As you can expect, there are some tools that will be required to be successful with this lab. Please have the following in order to take full advantage of this workshop/lab guide.
+As you can expect, there are some tools that will be required to be successful with this lab. If you are going through this on your own without a preseter, please have the following in order to take full advantage of this workshop/lab guide.
 - Docker
 - Terraform
 
-In addition to the necessary tools, this lab will use those tools to create resources in the cloud provider of your choice (what will be created will be explicitly stated in steps where you create it). These resources are used to create the end-to-end flow of data. The following states necessary credentials for each respective cloud provider.
+Like above, if you are going through this on your own without a presenter, you will need the following to create resources in the cloud provider of your choice (what will be created will be explicitly stated in steps where you create it). These resources are used to create the end-to-end flow of data. The following states necessary credentials for each respective cloud provider.
 - AWS
     - A user account with an API Key and Secret Key.
     - Appropriate permissions in a non-prod environment to create resources.
@@ -36,10 +36,8 @@ In addition to the necessary tools, this lab will use those tools to create reso
     - A non-prod project within which resources can be created.
     - A user account with a JSON Key file.
     - Appropriate permissions within the non-prod project to create resources.
-- Azure
-    - TBD.
 
-Finally, in order to sink data to a data warehouse in real-time, you'll need one of the following data warehousing technologies and the stated permissions. It is expected that you'll either have one of these two solutions already to use, or to follow the included documentation to have it provisioned to work with Confluent Cloud.
+*(Optional)* Finally, in order to sink data to a data warehouse or data repository in real-time, you'll need one of the following and the stated permissions. It is expected that you'll either have one of these solutions already, or you will follow the included documentation to have it provisioned to work with Confluent Cloud.
 - Snowflake
     - [Current Limitations](https://docs.confluent.io/cloud/current/connectors/limits.html#snowflake-sink-connector).
 - Databricks *(AWS only)*
@@ -47,6 +45,8 @@ Finally, in order to sink data to a data warehouse in real-time, you'll need one
     - An S3 bucket in which the Delta Lake Sink Connector can stage data (this is explained in the link below).
     - Please review and walk through the following documentation to verify the appropriate setup within AWS and Databricks.
         - [Set Up Databricks Delta Lake](https://docs.confluent.io/cloud/current/connectors/cc-databricks-delta-lake-sink/databricks-aws-setup.html).
+- Imply
+    - Imply Polaris account, which can be signed up for [here](https://signup.imply.io/get-started).
 
 ***
 
@@ -81,7 +81,7 @@ Finally, in order to sink data to a data warehouse in real-time, you'll need one
     export DATABRICKS_ACCESS_TOKEN="<replace>"
     export DELTA_LAKE_STAGING_BUCKET_NAME="<replace>"
     ```
-    > **Note:** *The impetus behind the above is so that you can easily `source env.sh` to have all the values available in the terminal.*
+    > **Note:** *The impetus behind the above is so that you can easily `source env.sh` to have all the values available in the terminal for Docker and Terraform.*
 
 1. Create a cluster in Confluent Cloud. The recommended cluster type for this workshop/lab is either Basic/Standard.
     - [Create a Cluster in Confluent Cloud](https://docs.confluent.io/cloud/current/clusters/create-cluster.html).
@@ -159,29 +159,18 @@ The Terraform configuration will create two outputs. These outputs are the publi
 
 The Terraform configuration will create two outputs. These outputs are the public endpoints of the Postgres (Customers DB) and Postgres (Products DB) instances that were created. Keep these handy as you will need them in the connector configuration steps. 
 
-
 </details>
-
-<br>
-
-<details>
-    <summary><b>Azure</b></summary>
-
-Coming Soon!
-
-</details>
-
-<br>
 
 ***
 
 ### Kafka Connectors
 
-1. Before creating the connectors, you'll need to create the topics they'll write data to. The following list of topics should each be created with **1 partition each** for simplicity in the **Topics** menu.
+1. Before creating the connectors, create the topics they'll write data to. The following list of topics should each be created with **1 partition each** for simplicity in the **Topics** menu.
     - `postgres.customers.customers`
     - `postgres.customers.demographics`
     - `postgres.products.products`
     - `postgres.products.orders`
+    > **Note:** *It's worth pointing out that Connectors will auto create their topics.*
     
 1. Once the topics have been created, start by creating the Debezium Postgres CDC Source Connector (for the customers DB). Select **Data integration > Connectors** from the left-hand menu, then search for the connector. When you find its tile, select it and configure it with the following settings, then launch it. 
 
@@ -197,8 +186,8 @@ Coming Soon!
     | Database port                     | 5432                                        |
     | Database username                 | postgres                                    |
     | Database password                 | rt-dwh-c0nflu3nt!                           |
-    | Output Kafka record value format  | JSON_SR                                     |
-    | Output Kafka record key format    | JSON_SR                                     |
+    | Output Kafka record value format  | AVRO                                        |
+    | Output Kafka record key format    | AVRO                                        |
     | Slot name                         | *something creative, like **camel**, it can be anything unique* |
     | Tables included                   | customers.customers, customers.demographics |
     | After-state only                  | false                                       |
@@ -220,7 +209,7 @@ Coming Soon!
     | Database port                     | 5432                                        |
     | Database username                 | postgres                                    |
     | Database password                 | rt-dwh-c0nflu3nt!                           |
-    | Output Kafka record value format  | JSON_SR                                     |
+    | Output Kafka record value format  | AVRO                                        |
     | Slot name                         | *something creative, like **turtle**, it can be anything unique* |
     | Tables included                   | products.products, products.orders          |
     | Tasks                             | 1                                           |
@@ -233,212 +222,212 @@ Give the connectors a chance to provision, and troubleshoot any failures that oc
 
 ### Ksql 
 
-With the connectors provisioned, it's time to transform and join our streams of data in-flight with Ksql. If your cluster is still provisioning, give it more time before continuing. 
+With the connectors provisioned, it's time to transform and join our streams of data in-flight with Ksql. If your cluster is still provisioning, give it more time before continuing. When it's ready, select your instance to view the editor. Before running any of the following queries **make sure to set `auto.offset.reset = earliest`**.
 
 1. Use the following statements to consume the `customers` data and flatten it for ease of use. 
     ```sql
-        CREATE STREAM customers_structured (
-            struct_key STRUCT<id VARCHAR> KEY,
-            before STRUCT<id VARCHAR, first_name VARCHAR, last_name VARCHAR, email VARCHAR, phone VARCHAR>,
-            after STRUCT<id VARCHAR, first_name VARCHAR, last_name VARCHAR, email VARCHAR, phone VARCHAR>,
-            op VARCHAR
-        ) WITH (
-            KAFKA_TOPIC='postgres.customers.customers',
-            KEY_FORMAT='JSON_SR',
-            VALUE_FORMAT='JSON_SR'
-        );
+    CREATE STREAM customers_structured (
+        struct_key STRUCT<id VARCHAR> KEY,
+        before STRUCT<id VARCHAR, first_name VARCHAR, last_name VARCHAR, email VARCHAR, phone VARCHAR>,
+        after STRUCT<id VARCHAR, first_name VARCHAR, last_name VARCHAR, email VARCHAR, phone VARCHAR>,
+        op VARCHAR
+    ) WITH (
+        KAFKA_TOPIC='postgres.customers.customers',
+        KEY_FORMAT='AVRO',
+        VALUE_FORMAT='AVRO'
+    );
     ```
     ```sql
-        CREATE STREAM customers_flattened WITH (
-                KAFKA_TOPIC='customers_flattened',
-                KEY_FORMAT='JSON_SR',
-                VALUE_FORMAT='JSON_SR'
-            ) AS SELECT
-                after->id,
-                after->first_name first_name, 
-                after->last_name last_name,
-                after->email email,
-                after->phone phone
-            FROM customers_structured
-            PARTITION BY after->id
-        EMIT CHANGES;
+    CREATE STREAM customers_flattened WITH (
+            KAFKA_TOPIC='customers_flattened',
+            KEY_FORMAT='AVRO',
+            VALUE_FORMAT='AVRO'
+        ) AS SELECT
+            after->id,
+            after->first_name first_name, 
+            after->last_name last_name,
+            after->email email,
+            after->phone phone
+        FROM customers_structured
+        PARTITION BY after->id
+    EMIT CHANGES;
     ```
 
 1. With the `customers` data flattened, it can be easily aggregated into a Ksql table to retain the most up-to-date values by customer.
     ```sql
-        CREATE TABLE customers WITH (
-                KAFKA_TOPIC='customers',
-                KEY_FORMAT='JSON_SR',
-                VALUE_FORMAT='JSON_SR'
-            ) AS SELECT
-                id,
-                LATEST_BY_OFFSET(first_name) first_name, 
-                LATEST_BY_OFFSET(last_name) last_name,
-                LATEST_BY_OFFSET(email) email,
-                LATEST_BY_OFFSET(phone) phone
-            FROM customers_flattened
-            GROUP BY id
-        EMIT CHANGES;
+    CREATE TABLE customers WITH (
+            KAFKA_TOPIC='customers',
+            KEY_FORMAT='AVRO',
+            VALUE_FORMAT='AVRO'
+        ) AS SELECT
+            id,
+            LATEST_BY_OFFSET(first_name) first_name, 
+            LATEST_BY_OFFSET(last_name) last_name,
+            LATEST_BY_OFFSET(email) email,
+            LATEST_BY_OFFSET(phone) phone
+        FROM customers_flattened
+        GROUP BY id
+    EMIT CHANGES;
     ```
 
 1. Next, do what is effectively the same thing, this time for the `demographics` data. 
     ```sql
-        CREATE STREAM demographics_structured (
-            struct_key STRUCT<id VARCHAR> KEY,
-            before STRUCT<id VARCHAR, street_address VARCHAR, state VARCHAR, zip_code VARCHAR, country VARCHAR, country_code VARCHAR>,
-            after STRUCT<id VARCHAR, street_address VARCHAR, state VARCHAR, zip_code VARCHAR, country VARCHAR, country_code VARCHAR>,
-            op VARCHAR
-        ) WITH (
-            KAFKA_TOPIC='postgres.customers.demographics',
-            KEY_FORMAT='JSON_SR',
-            VALUE_FORMAT='JSON_SR'
-        );
+    CREATE STREAM demographics_structured (
+        struct_key STRUCT<id VARCHAR> KEY,
+        before STRUCT<id VARCHAR, street_address VARCHAR, state VARCHAR, zip_code VARCHAR, country VARCHAR, country_code VARCHAR>,
+        after STRUCT<id VARCHAR, street_address VARCHAR, state VARCHAR, zip_code VARCHAR, country VARCHAR, country_code VARCHAR>,
+        op VARCHAR
+    ) WITH (
+        KAFKA_TOPIC='postgres.customers.demographics',
+        KEY_FORMAT='AVRO',
+        VALUE_FORMAT='AVRO'
+    );
     ```
     ```sql
-        CREATE STREAM demographics_flattened WITH (
-                KAFKA_TOPIC='demographics_flattened',
-                KEY_FORMAT='JSON_SR',
-                VALUE_FORMAT='JSON_SR'
-            ) AS SELECT
-                after->id,
-                after->street_address,
-                after->state,
-                after->zip_code,
-                after->country,
-                after->country_code
-            FROM demographics_structured
-            PARTITION BY after->id
-        EMIT CHANGES;
+    CREATE STREAM demographics_flattened WITH (
+            KAFKA_TOPIC='demographics_flattened',
+            KEY_FORMAT='AVRO',
+            VALUE_FORMAT='AVRO'
+        ) AS SELECT
+            after->id,
+            after->street_address,
+            after->state,
+            after->zip_code,
+            after->country,
+            after->country_code
+        FROM demographics_structured
+        PARTITION BY after->id
+    EMIT CHANGES;
     ```
 
 1. And now create a Ksql table to retain the most up-to-date values by demographics. 
     ```sql
-        CREATE TABLE demographics WITH (
-                KAFKA_TOPIC='demographics',
-                KEY_FORMAT='JSON_SR',
-                VALUE_FORMAT='JSON_SR'
-            ) AS SELECT
-                id, 
-                LATEST_BY_OFFSET(street_address) street_address,
-                LATEST_BY_OFFSET(state) state,
-                LATEST_BY_OFFSET(zip_code) zip_code,
-                LATEST_BY_OFFSET(country) country,
-                LATEST_BY_OFFSET(country_code) country_code
-            FROM demographics_flattened
-            GROUP BY id
-        EMIT CHANGES;
+    CREATE TABLE demographics WITH (
+            KAFKA_TOPIC='demographics',
+            KEY_FORMAT='AVRO',
+            VALUE_FORMAT='AVRO'
+        ) AS SELECT
+            id, 
+            LATEST_BY_OFFSET(street_address) street_address,
+            LATEST_BY_OFFSET(state) state,
+            LATEST_BY_OFFSET(zip_code) zip_code,
+            LATEST_BY_OFFSET(country) country,
+            LATEST_BY_OFFSET(country_code) country_code
+        FROM demographics_flattened
+        GROUP BY id
+    EMIT CHANGES;
     ```
 
 1. With the two tables `customers` and `demographics` created, they can be joined together to create what will effectively be an always up-to-date view of the customer and demographic data combined together by the customer ID. 
     ```sql
-        CREATE TABLE customers_enriched WITH (
-                KAFKA_TOPIC='customers_enriched',
-                KEY_FORMAT='JSON_SR',
-                VALUE_FORMAT='JSON_SR'
-            ) AS SELECT 
-                c.id id, c.first_name first_name, c.last_name last_name, c.email email, c.phone phone,
-                d.street_address street_address, d.state state, d.zip_code zip_code, d.country country, d.country_code country_code
-            FROM customers c
-                JOIN demographics d ON d.id = c.id
-        EMIT CHANGES;
+    CREATE TABLE customers_enriched WITH (
+            KAFKA_TOPIC='customers_enriched',
+            KEY_FORMAT='AVRO',
+            VALUE_FORMAT='AVRO'
+        ) AS SELECT 
+            c.id id, c.first_name first_name, c.last_name last_name, c.email email, c.phone phone,
+            d.street_address street_address, d.state state, d.zip_code zip_code, d.country country, d.country_code country_code
+        FROM customers c
+            JOIN demographics d ON d.id = c.id
+    EMIT CHANGES;
     ```
 
 1. Next, use the following statements to capture the `products` data and re-key it.
     ```sql
-        CREATE STREAM products_composite (
-            struct_key STRUCT<product_id VARCHAR> KEY,
-            product_id VARCHAR,
-            `size` VARCHAR,
-            product VARCHAR,
-            department VARCHAR,
-            price VARCHAR,
-            __deleted VARCHAR
-        ) WITH (
-            KAFKA_TOPIC='postgres.products.products',
-            KEY_FORMAT='JSON',
-            VALUE_FORMAT='JSON_SR'
-        );
+    CREATE STREAM products_composite (
+        struct_key STRUCT<product_id VARCHAR> KEY,
+        product_id VARCHAR,
+        `size` VARCHAR,
+        product VARCHAR,
+        department VARCHAR,
+        price VARCHAR,
+        __deleted VARCHAR
+    ) WITH (
+        KAFKA_TOPIC='postgres.products.products',
+        KEY_FORMAT='JSON',
+        VALUE_FORMAT='AVRO'
+    );
     ```
     ```sql
-        CREATE STREAM products_rekeyed WITH (
-                KAFKA_TOPIC='products_rekeyed',
-                KEY_FORMAT='KAFKA',
-                VALUE_FORMAT='JSON_SR'
-            ) AS SELECT 
-                product_id,
-                `size`,
-                product,
-                department,
-                price,
-                __deleted deleted
-            FROM products_composite
-            PARTITION BY product_id
-        EMIT CHANGES;
+    CREATE STREAM products_rekeyed WITH (
+            KAFKA_TOPIC='products_rekeyed',
+            KEY_FORMAT='KAFKA',
+            VALUE_FORMAT='AVRO'
+        ) AS SELECT 
+            product_id,
+            `size`,
+            product,
+            department,
+            price,
+            __deleted deleted
+        FROM products_composite
+        PARTITION BY product_id
+    EMIT CHANGES;
     ```
 
 1. Just like you did with the customer data, create a Ksql table to retain the most up-to-date values for the `products` data. 
     ```sql 
-        CREATE TABLE products WITH (
-                KAFKA_TOPIC='products',
-                KEY_FORMAT='JSON_SR',
-                VALUE_FORMAT='JSON_SR'
-            ) AS SELECT 
-                product_id,
-                LATEST_BY_OFFSET(`size`) `size`,
-                LATEST_BY_OFFSET(product) product,
-                LATEST_BY_OFFSET(department) department,
-                LATEST_BY_OFFSET(price) price,
-                LATEST_BY_OFFSET(deleted) deleted
-            FROM products_rekeyed
-            GROUP BY product_id
-        EMIT CHANGES;
+    CREATE TABLE products WITH (
+            KAFKA_TOPIC='products',
+            KEY_FORMAT='AVRO',
+            VALUE_FORMAT='AVRO'
+        ) AS SELECT 
+            product_id,
+            LATEST_BY_OFFSET(`size`) `size`,
+            LATEST_BY_OFFSET(product) product,
+            LATEST_BY_OFFSET(department) department,
+            LATEST_BY_OFFSET(price) price,
+            LATEST_BY_OFFSET(deleted) deleted
+        FROM products_rekeyed
+        GROUP BY product_id
+    EMIT CHANGES;
     ```
 
 1. Next, replicate what you did above with the `orders` data. 
     ```sql
-        CREATE STREAM orders_composite (
-            order_key STRUCT<`order_id` VARCHAR> KEY,
-            order_id VARCHAR,
-            product_id VARCHAR,
-            customer_id VARCHAR,
-            __deleted VARCHAR
-        ) WITH (
-            KAFKA_TOPIC='postgres.products.orders',
-            KEY_FORMAT='JSON',
-            VALUE_FORMAT='JSON_SR'
-        );
+    CREATE STREAM orders_composite (
+        order_key STRUCT<`order_id` VARCHAR> KEY,
+        order_id VARCHAR,
+        product_id VARCHAR,
+        customer_id VARCHAR,
+        __deleted VARCHAR
+    ) WITH (
+        KAFKA_TOPIC='postgres.products.orders',
+        KEY_FORMAT='JSON',
+        VALUE_FORMAT='AVRO'
+    );
     ```
     ```sql
-        CREATE STREAM orders_rekeyed WITH (
-                KAFKA_TOPIC='orders_rekeyed',
-                KEY_FORMAT='KAFKA',
-                VALUE_FORMAT='JSON_SR'
-            ) AS SELECT
-                order_id,
-                product_id,
-                customer_id,
-                __deleted deleted
-            FROM orders_composite
-            PARTITION BY order_id
-        EMIT CHANGES;
+    CREATE STREAM orders_rekeyed WITH (
+            KAFKA_TOPIC='orders_rekeyed',
+            KEY_FORMAT='KAFKA',
+            VALUE_FORMAT='AVRO'
+        ) AS SELECT
+            order_id,
+            product_id,
+            customer_id,
+            __deleted deleted
+        FROM orders_composite
+        PARTITION BY order_id
+    EMIT CHANGES;
     ```
 
 1. Finally, create a Ksql stream to join **all** the tables together to enrich the order data in real time. 
     ```sql
-        CREATE STREAM orders_enriched WITH (
-                KAFKA_TOPIC='orders_enriched',
-                KEY_FORMAT='JSON',
-                VALUE_FORMAT='JSON_SR'
-            ) AS SELECT 
-                o.order_id `order_id`,
-                p.product_id `product_id`, p.`size` `size`, p.product `product`, p.department `department`, p.price `price`,
-                c.id `id`, c.first_name `first_name`, c.last_name `last_name`, c.email `email`, c.phone `phone`,
-                c.street_address `street_address`, c.state `state`, c.zip_code `zip_code`, c.country `country`, c.country_code `country_code`
-            FROM orders_rekeyed o
-                JOIN products p ON o.product_id = p.product_id
-                JOIN customers_enriched c ON o.customer_id = c.id
-            PARTITION BY o.order_id  
-        EMIT CHANGES;  
+    CREATE STREAM orders_enriched WITH (
+            KAFKA_TOPIC='orders_enriched',
+            KEY_FORMAT='JSON',
+            VALUE_FORMAT='AVRO'
+        ) AS SELECT 
+            o.order_id `order_id`,
+            p.product_id `product_id`, p.`size` `size`, p.product `product`, p.department `department`, p.price `price`,
+            c.id `id`, c.first_name `first_name`, c.last_name `last_name`, c.email `email`, c.phone `phone`,
+            c.street_address `street_address`, c.state `state`, c.zip_code `zip_code`, c.country `country`, c.country_code `country_code`
+        FROM orders_rekeyed o
+            JOIN products p ON o.product_id = p.product_id
+            JOIN customers_enriched c ON o.customer_id = c.id
+        PARTITION BY o.order_id  
+    EMIT CHANGES;       
     ```
     > **Note:** *You used a stream rather than a table above since you'll use this new stream of enriched data to hydrate your data warehouse in a future step.* 
 
@@ -446,7 +435,7 @@ At this point, you should have a functioning Ksql topology. To see the flow laid
 
 ***
 
-### Data Warehouse Connectors
+### Data Warehouse or Database Connectors
 
 With the data now being captured from the two source databases and transformed in real-time, you're ready to sink the data to your data warehouse with another connector. Expand the section below corresponding to the data warehousing technology of your choice, and follow the directions to set it up. 
 
@@ -503,6 +492,13 @@ The most detailed description of setting up the **Fully-Managed Snowflake Sink C
 
 <br>
 
+<details>
+    <summary><b>Imply Polaris</b></summary>
+
+To add Imply Polaris as the target for your real-time data, use the following guide in order to set things up [here](/polaris/README.md);
+
+</details>
+
 ***
 
 ## Cleanup
@@ -518,13 +514,13 @@ During this lab you created the following resources, be sure to remove them when
 - Kafka Cluster
 
 ### Terraform
-To remove everything provisioned by Terraform in either AWS, GCP, or Azure, use the following command.
+To remove everything provisioned by Terraform in either AWS, GCP, or Azure, use the following command in the corresponing Terraform folder.
 
 ```bash
 terraform destroy
 ```
 
-### Databricks and Snowflake
+### Data Warehouse or Database
 If you created instances of either Databricks and Snowflake solely for the purpose of this lab, remove them!
 
 ***
